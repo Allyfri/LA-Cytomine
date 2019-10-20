@@ -867,7 +867,7 @@ class Data_manager:
         # write data into file
         print len(out[0])
         csv_out.writerow(out[0])
-        for i in range(len(self.user_list)):
+        for i in range(len(self.user_list)+1):
             csv_out.writerow(out[i + 1])
 
         f.close()
