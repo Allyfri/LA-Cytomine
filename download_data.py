@@ -149,7 +149,7 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
     for image in images:
         id_image=image.id
         print "Downloading data associated to image %d" %id_image
-        if id_image in im_subset:
+        if str(id_image) in im_subset:
             image_dir = "images/image_" + str(id_image)
             if not os.path.exists(working_path + project_dir + image_dir):
                 os.makedirs(working_path + project_dir + image_dir)
