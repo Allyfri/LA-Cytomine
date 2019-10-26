@@ -213,6 +213,8 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
 
                     zooms = np.zeros(image_instance.depth)
                     id_user = u.id
+                    nb_opens = 0
+
                     if not os.path.exists(working_path + project_dir + image_dir + "/user_positions"):
                         os.makedirs(working_path + project_dir +  image_dir + "/user_positions")
                     # Get_positions for this user in this image: using paging (maxperpage) and using start/end timestamps
@@ -244,7 +246,6 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
                             continue
 
                     nb_positions = len(positions.data())
-                    nb_opens = 0
                     if nb_positions == 0:
                         fstats.flush()
                     elif nb_positions > 0:
@@ -289,28 +290,32 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
 
                     #Get Annotations
                     #Get user annotations in this image (to generate statistics about annotation creation).
+                    filtered_annotations = []
                     nb_filtered_annotations=0
                     annotations = conn.get_annotations(id_image=id_image,
                                                        id_user=id_user,
-                                                       id_project=id_project)
+                                                       id_project=id_project,
+                                                       showWKT=True,
+                                                       showMeta=True)
+
                     nb_annotations = len(annotations.data())
+                    filtered_annotations = list(filter(lambda a: float(a.created) > float(start_timestamp) and float(a.created) < float(end_timestamp), annotations.data()))
+                    nb_filtered_annotations = len(filtered_annotations)
+
                     csv_filename = str(id_user) + "_" + str(u.username) + '_cytomine_annotations.csv'
                     if not os.path.exists(working_path + project_dir + image_dir + "/user_annotations"):
                         os.makedirs(working_path + project_dir + image_dir + "/user_annotations")
-                    if nb_annotations > 0:
-                        print "We actually have at least 1 annotation"
+                    if nb_filtered_annotations > 0:
                         output_annotation_file = os.path.join(working_path + project_dir + image_dir + "/user_annotations", csv_filename)
                         f = open(output_annotation_file, "wb")
                         csv_annotations = csv.writer(f)
                         csv_annotations.writerow(['type', 'x_center', 'y_center', 'annotationIdent'])
-                        for a in annotations.data():
-                            if float(a.created) > float(start_timestamp) and float(a.created) < float(end_timestamp):
-                                geom = loads(a.location)
-                                nb_filtered_annotations += 1
-                                if geom.type == 'Point':
-                                    csv_annotations.writerow([geom.type,geom.x,geom.y,a.id])
-                                else:
-                                    csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id])
+                        for a in filtered_annotations:
+                            geom = loads(a.location)
+                            if geom.type == 'Point':
+                                csv_annotations.writerow([geom.type,geom.x,geom.y,a.id])
+                            else:
+                                csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id])
                         f.close()
 
                     #Get AnnotationActions
