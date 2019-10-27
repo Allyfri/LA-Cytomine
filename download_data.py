@@ -309,13 +309,21 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
                         output_annotation_file = os.path.join(working_path + project_dir + image_dir + "/user_annotations", csv_filename)
                         f = open(output_annotation_file, "wb")
                         csv_annotations = csv.writer(f)
-                        csv_annotations.writerow(['type', 'x_center', 'y_center', 'annotationIdent'])
+                        csv_annotations.writerow(['type', 'x_center', 'y_center', 'annotationIdent', 'description'])
                         for a in filtered_annotations:
+                            description = ""#Description()
+                            #description.domainIdent = a.id
+                            #description.domainClassName = "be.cytomine.ontology.UserAnnotation"
+                            #description = conn.fetch(description)
+                            #if description is not None:
+                                #description = description.data.encode('utf-8')
+                            #else:
+                                #description = ""
                             geom = loads(a.location)
                             if geom.type == 'Point':
-                                csv_annotations.writerow([geom.type,geom.x,geom.y,a.id])
+                                csv_annotations.writerow([geom.type,geom.x,geom.y,a.id, description])
                             else:
-                                csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id])
+                                csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id, description])
                         f.close()
 
                     #Get AnnotationActions
@@ -362,6 +370,7 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
                         nb_time_intervals = int(math.ceil((end_timestamp-start_timestamp)/timestep))/1000
                         time_intervals = np.zeros(nb_time_intervals+1)
                         central_positions = np.zeros(nb_time_intervals+1)
+
 
                         #Filter obtained positions based on start/end timestamp (only write in csv positions included in the given time interval)
                         #Save every position in a csv file
