@@ -29,6 +29,7 @@ import socket
 import time
 import numpy as np
 from cytomine.models import *
+from cytomine.models.description import *
 from shapely.wkt import loads
 from shutil import copyfile
 import config
@@ -309,21 +310,23 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
                         output_annotation_file = os.path.join(working_path + project_dir + image_dir + "/user_annotations", csv_filename)
                         f = open(output_annotation_file, "wb")
                         csv_annotations = csv.writer(f)
-                        csv_annotations.writerow(['type', 'x_center', 'y_center', 'annotationIdent', 'description'])
+                        csv_annotations.writerow(['type', 'x_center', 'y_center', 'annotationIdent', 'created', 'description', 'created_description'])
                         for a in filtered_annotations:
-                            description = ""#Description()
-                            #description.domainIdent = a.id
-                            #description.domainClassName = "be.cytomine.ontology.UserAnnotation"
-                            #description = conn.fetch(description)
-                            #if description is not None:
-                                #description = description.data.encode('utf-8')
-                            #else:
-                                #description = ""
+                            description = Description()
+                            description.domainIdent = a.id
+                            description.domainClassName = "be.cytomine.ontology.UserAnnotation"
+                            description = conn.fetch(description)
+                            if description is not None:
+                                created_description = description.created
+                                description = description.data.encode('utf-8')
+                            else:
+                                created_description = 0
+                                description = ""
                             geom = loads(a.location)
                             if geom.type == 'Point':
-                                csv_annotations.writerow([geom.type,geom.x,geom.y,a.id, description])
+                                csv_annotations.writerow([geom.type,geom.x,geom.y,a.id, a.created, description, created_description])
                             else:
-                                csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id, description])
+                                csv_annotations.writerow([geom.type, geom.centroid.x, geom.centroid.y,a.id, a.created, description, created_description])
                         f.close()
 
                     #Get AnnotationActions
@@ -376,9 +379,9 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
                         #Save every position in a csv file
                         previous_central=float(start_timestamp)
                         csvout.writerow(['annotationIdent', 'created', 'action'])
-                        for a in ann_actions.data():
-                            if float(a.created) > float(start_timestamp) and float(a.created) < float(end_timestamp):
-                                csvout.writerow([a.annotationIdent, a.created, a.action])
+#                        for a in ann_actions.data():
+#                            if float(a.created) > float(start_timestamp) and float(a.created) < float(end_timestamp):
+#                                csvout.writerow([a.annotationIdent, a.created, a.action])
                         f.close()
 
 

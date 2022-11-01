@@ -25,6 +25,7 @@ from ast import literal_eval
 import numpy as np
 from pygazeanalyser.gazeplotter import gaussian
 import config
+import sys
 
 
 def get_dimensions(corners):
@@ -172,14 +173,14 @@ def parse_positions(data, image_data, duration=20, calc_gauss=True, end_date=Non
                 x_l, y_l = get_dimensions(corners)
                 zoom_x = max(1, x_l)
                 zoom_y = max(1, y_l)
-                sx = zoom_x / 6
-                sy = zoom_y / 6
+                sx = float(zoom_x) / 6
+                sy = float(zoom_y) / 6
                 d = (gaussian(np.int(zoom_x), sx, np.int(zoom_y), sy), zoom_x, zoom_y)
                 image_data.gaussians['zoom_' + str(row_data[2])] = d
     return ret
 
 
-def parse_annotations(data, end_date=None):
+def parse_ref_annotations(data, end_date=None):
     """
     parse annotations of a user in an image to a dictionary based on data read from file
     :param data: data directly read from annotation files
@@ -190,7 +191,7 @@ def parse_annotations(data, end_date=None):
         i = 0
         while i < len(data):
             row_data = data[i]
-            timestamp = np.double(row_data[3])
+            timestamp = np.double(row_data[5])
             if timestamp > end_date:
                 del data[i]
             else:
@@ -210,6 +211,45 @@ def parse_annotations(data, end_date=None):
         ret['id'][row] = row_data[3]
         ret['localId'][row] = row_data[4]
         ret['type'].append(row_data[0])
+
+    return ret
+
+
+def parse_annotations(data, end_date=None):
+    """
+    parse annotations of a user in an image to a dictionary based on data read from file
+    :param data: data directly read from annotation files
+    :param end_date: remove annotations after this date
+    :return: dictionary of annotations
+    """
+    if end_date:
+        i = 0
+        while i < len(data):
+            row_data = data[i]
+            timestamp = np.double(row_data[5])
+            if timestamp > end_date:
+                del data[i]
+            else:
+                i +=1
+    # dict template
+    ret = {'x': np.zeros(len(data)),
+           'y': np.zeros(len(data)),
+           'id': np.zeros(len(data)),
+           'type': [],
+           'timestamp': np.zeros(len(data)),
+           'description': [],
+           'description_timestamp': np.zeros(len(data))}
+
+    # fills dictionary
+    for row in range(len(data)):
+        row_data = data[row]
+        ret['x'][row] = row_data[1]
+        ret['y'][row] = row_data[2]
+        ret['id'][row] = row_data[3]
+        ret['type'].append(row_data[0])
+        ret['timestamp'][row] = np.double(row_data[4])
+        ret['description'].append(row_data[5])
+        ret['description_timestamp'][row] = np.double(row_data[6])
 
     return ret
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 import time
 import config
+import numpy as np
 from gazemap import score_user_on_image
 
 class Module_data:
@@ -126,6 +127,264 @@ class Module_data:
             ret4.append(nb_im)
 
         return ret, ret2, ret3, ret4
+
+    def annotation_total_avg_median(self):
+        """
+        calculates annotation variables for each user
+        :return: 1) total
+                 2) average
+                 3) median
+        """
+        ret = []
+        ret2 = []
+        ret3 = []
+        for user in self.user_list:
+            nb = 0
+            nb_im = 0
+            med_list = []
+            for image_id in self.images:
+                if image_id in user.user_annotations:
+                    annot = user.user_annotations[image_id]
+                    start, end = self.start_end_indexes(annot)
+                    nb += end - start + 1
+                    med_list.append(end - start + 1)
+                    if end > start:
+                        nb_im += 1
+                else:
+                    med_list.append(0)
+
+            ret.append(nb)
+            if len(self.images) == 0:
+                ret2.append(0)
+            else:
+                ret2.append(float(nb)/len(self.images))
+            med_list.sort()
+            if len(med_list) == 0:
+                ret3.append(0)
+            else:
+                ret3.append(med_list[int(len(med_list)/2)])
+
+        return ret, ret2, ret3
+
+    def annotation_total_per_image(self):
+        """
+        calculates annotation variables for each user per image
+        :return: 1) total
+        """
+        ret = []
+        for user in self.user_list:
+            res = {}
+            for image_id in self.images:
+                nb = 0
+                if image_id in user.user_annotations:
+                    annot = user.user_annotations[image_id]
+                    start, end = self.start_end_indexes(annot)
+                    nb = end - start + 1
+
+                res[image_id] = nb
+            ret.append(res)
+
+        return ret
+
+    def description_total_avg_median_with_chars_and_words_aggr_data(self):
+        """
+        calculates description variables for each user
+        :return: 1) total
+                 2) average
+                 3) median
+                 4) total nb of words
+                 5) total nb of chars
+                 6) avg ng of word
+                 7) avg nb of char
+                 8) median nb of words
+                 9) median nb of chars
+        """
+        ret = []
+        ret2 = []
+        ret3 = []
+        ret4 = []
+        ret5 = []
+        ret6 = []
+        ret7 = []
+        ret8 = []
+        ret9 = []
+        for user in self.user_list:
+            nb = 0
+            nb_im = 0
+            med_list = []
+            descriptions = []
+            for image_id in self.images:
+                if image_id in user.user_descriptions:
+                    desc = user.user_descriptions[image_id]
+                    start, end = self.start_end_indexes(desc)
+                    nb += end - start + 1
+                    med_list.append(end - start + 1)
+                    descriptions.extend(desc['description'][start:end])
+                    if end > start:
+                        nb_im += 1
+                else:
+                    med_list.append(0)
+                
+
+            ret.append(nb)
+            if len(self.images) == 0:
+                ret2.append(0)
+            else:
+                ret2.append(float(nb)/len(self.images))
+            med_list.sort()
+            if len(med_list) == 0:
+                ret3.append(0)
+            else:
+                ret3.append(med_list[int(len(med_list)/2)])
+
+
+            total_description_word = None
+            total_description_char = None
+            avg_words_description = None
+            avg_chars_description = None
+            median_words_description = None
+            median_chars_description = None
+
+            #total nb of word
+            total_description_word = sum(list(map(lambda x: len(x.split()), descriptions)))
+            #total nb of char
+            total_description_char = sum(list(map(lambda x: len(x.strip().decode("utf-8")), descriptions)))
+            if nb == 0:
+                ret4.append(total_description_word)
+                ret5.append(0)
+                ret6.append(0)
+                ret7.append(total_description_char)
+                ret8.append(0)
+                ret9.append(0)
+                continue
+
+            #avg ng of word
+            avg_words_description = float(total_description_word)/float(nb)
+            #avg nb of char
+            avg_chars_description = float(total_description_char)/float(nb)
+            #median nb of words & chars
+            # put them in an array
+            chars = np.zeros(nb)
+            words = np.zeros(nb)
+            i = 0
+            for desc in descriptions:
+                chars[i] = len(desc.strip().decode("utf-8"))
+                words[i] = len(desc.split())
+                i += 1
+            # sort them
+            chars = np.sort(chars)
+            words = np.sort(words)
+
+            # return position number in the middle (median)
+            median_words_description = words[np.int(nb/2)]
+            median_chars_description = chars[np.int(nb/2)]
+
+            ret4.append(total_description_word)
+            ret5.append(avg_words_description)
+            ret6.append(median_words_description)
+            ret7.append(total_description_char)
+            ret8.append(avg_chars_description)
+            ret9.append(median_chars_description)
+
+
+        return ret, ret2, ret3, ret4, ret5, ret6, ret7, ret8, ret9
+
+    def description_total_with_chars_and_words_aggr_data_per_image(self):
+        """
+        calculates description variables for each user per image
+        :return: 1) total
+                 2) total nb of words
+                 3) total nb of chars
+                 4) avg ng of word
+                 5) avg nb of char
+                 6) median nb of words
+                 7) median nb of chars
+        """
+        ret = []
+        ret2 = []
+        ret3 = []
+        ret4 = []
+        ret5 = []
+        ret6 = []
+        ret7 = []
+        for user in self.user_list:
+            nb = 0
+            descriptions = []
+            res1 = {}
+            res2 = {}
+            res3 = {}
+            res4 = {}
+            res5 = {}
+            res6 = {}
+            res7 = {}
+            for image_id in self.images:
+                if image_id in user.user_descriptions:
+                    desc = user.user_descriptions[image_id]
+                    start, end = self.start_end_indexes(desc)
+                    nb += end - start + 1
+                    descriptions.extend(desc['description'][start:end])
+                res1[image_id] = nb
+                
+
+
+                total_description_word = None
+                total_description_char = None
+                avg_words_description = None
+                avg_chars_description = None
+                median_words_description = None
+                median_chars_description = None
+
+                #total nb of word
+                total_description_word = sum(list(map(lambda x: len(x.split()), descriptions)))
+                #total nb of char
+                total_description_char = sum(list(map(lambda x: len(x.strip().decode("utf-8")), descriptions)))
+                if nb == 0:
+                    res2[image_id] = total_description_word
+                    res3[image_id] = 0
+                    res4[image_id] = 0
+                    res5[image_id] = total_description_char
+                    res6[image_id] = 0
+                    res7[image_id] = 0
+                    continue
+
+                #avg ng of word
+                avg_words_description = float(total_description_word)/float(nb)
+                #avg nb of char
+                avg_chars_description = float(total_description_char)/float(nb)
+                #median nb of words & chars
+                # put them in an array
+                chars = np.zeros(nb)
+                words = np.zeros(nb)
+                i = 0
+                for desc in descriptions:
+                    chars[i] = len(desc.strip().decode("utf-8"))
+                    words[i] = len(desc.split())
+                    i += 1
+                # sort them
+                chars = np.sort(chars)
+                words = np.sort(words)
+
+                # return position number in the middle (median)
+                median_words_description = words[np.int(nb/2)]
+                median_chars_description = chars[np.int(nb/2)]
+
+                res2[image_id] = total_description_word
+                res3[image_id] = avg_words_description
+                res4[image_id] = median_words_description
+                res5[image_id] = total_description_char
+                res6[image_id] = avg_chars_description
+                res7[image_id] = median_chars_description
+
+            ret.append(res1)
+            ret2.append(res2)
+            ret3.append(res3)
+            ret4.append(res4)
+            ret5.append(res5)
+            ret6.append(res6)
+            ret7.append(res7)
+
+
+        return ret, ret2, ret3, ret4, ret5, ret6, ret7
 
     def time_spent_total_avg_median(self):
         """

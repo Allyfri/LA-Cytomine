@@ -539,6 +539,51 @@ class Data_manager:
                             bar.next()
                             tot += len(self.user_list)
 
+            if len(im.user_annotations) > 0:
+                out[0].append('X')
+                out[1].append("NB ANNOTATIONS AT IMAGE " + str(im.image_id))
+                # le fichier généré est une row par utilisateur !
+                for i in range(len(self.user_list)):
+                    nb = self.user_list[i].number_user_annotations(im.image_id)
+                    out[i + 2].append(nb)
+                    k += 1
+                    if k > tot:
+                        bar.next()
+                        tot += len(self.user_list)
+                out[0].append('X')
+                out[1].append("NB DESCRIPTIONS AT IMAGE " + str(im.image_id))
+                for i in range(len(self.user_list)):
+                    nb = self.user_list[i].number_user_description(im.image_id)
+                    out[i + 2].append(nb)
+                    k += 1
+                    if k > tot:
+                        bar.next()
+                        tot += len(self.user_list)
+
+                out[0].append('X')
+                out[1].append("TOTAL NB WORDS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                out[0].append('X')
+                out[1].append("AVG NB WORDS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                out[0].append('X')
+                out[1].append("MEDIAN NB WORDS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                out[0].append('X')
+                out[1].append("TOTAL NB CHARACTERS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                out[0].append('X')
+                out[1].append("AVG NB CHARACTERS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                out[0].append('X')
+                out[1].append("MEDIAN NB CHARACTERS OF DESCRIPTION AT IMAGE " + str(im.image_id))
+                for i in range(len(self.user_list)):
+                    total_description_word, avg_words_description, median_words_description, total_description_char, avg_chars_description, median_chars_description = self.user_list[i].aggr_user_description_of_image(im.image_id)
+                    out[i + 2].append(total_description_word)
+                    out[i + 2].append(avg_words_description)
+                    out[i + 2].append(median_words_description)
+                    out[i + 2].append(total_description_char)
+                    out[i + 2].append(avg_chars_description)
+                    out[i + 2].append(median_chars_description)
+                    k += 1
+                    if k > tot:
+                        bar.next()
+                        tot += len(self.user_list)
         return out
 
     def var18_module_variables(self, out, bar):
@@ -593,6 +638,77 @@ class Data_manager:
                 out[i + 2].append(med[i])
             bar.next()
 
+            tot, avg, med = module.annotation_total_avg_median()
+            out[0].append("X")
+            out[1].append("TOTAL NB ANNOTATIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(tot[i])
+            bar.next()
+
+            out[0].append("X")
+            out[1].append("AVG NB ANNOTATIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(avg[i])
+            bar.next()
+
+            out[0].append("X")
+            out[1].append("MEDIAN NB ANNOTATIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(med[i])
+            bar.next()
+
+            tot, avg, med, tot_words, tot_chars, avg_words, avg_chars, med_words, med_chars = module.description_total_avg_median_with_chars_and_words_aggr_data()
+            out[0].append("X")
+            out[1].append("TOTAL NB DESCRIPTIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(tot[i])
+            bar.next()
+
+            out[0].append("X")
+            out[1].append("AVG NB DESCRIPTIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(avg[i])
+            bar.next()
+
+            out[0].append("X")
+            out[1].append("MEDIAN NB DESCRIPTIONS DURING MODULE " + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(med[i])
+            bar.next()
+
+            out[0].append('X')
+            out[1].append('TOTAL NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(tot_words[i])
+            bar.next()
+
+            out[0].append('X')
+            out[1].append('AVG NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(avg_words[i])
+            bar.next()
+            out[0].append('X')
+            out[1].append('MEDIAN NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(med_words[i])
+            bar.next()
+            out[0].append('X')
+            out[1].append('TOTAL NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(tot_chars[i])
+            bar.next()
+            out[0].append('X')
+            out[1].append('AVG NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(avg_chars[i])
+            bar.next()
+            out[0].append('X')
+            out[1].append('MEDIAN NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id)
+            for i in range(len(self.user_list)):
+                out[i + 2].append(med_chars[i])
+            bar.next()
+
+
             pos, id = module.per_image_nb_positions()
             for i in range(len(pos)):
                 out[0].append("X")
@@ -628,6 +744,41 @@ class Data_manager:
                 poss = pos[i]
                 for j in range(len(poss)):
                     out[j + 2].append(poss[j])
+                bar.next()
+
+
+            annots = module.annotation_total_per_image()
+            for j_id in module.images:
+                out[0].append("X")
+                out[1].append("NB OF ANNOTATIONS DURING MODULE " + module.id + " AT IMAGE " + j_id)
+                for i in range(len(self.user_list)):
+                    out[i + 2].append(annots[i][j_id])
+                bar.next()
+
+            tot, tot_words, tot_chars, avg_words, avg_chars, med_words, med_chars = module.description_total_with_chars_and_words_aggr_data_per_image()
+            for j_id in module.images:
+                out[0].append("X")
+                out[1].append("NB OF DESCRIPTIONS DURING MODULE " + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('TOTAL NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('AVG NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('MEDIAN NB WORDS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('TOTAL NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('AVG NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                out[0].append('X')
+                out[1].append('MEDIAN NB CHARS IN DESCRIPTIONS DURING MODULE ' + module.id + " AT IMAGE " + j_id)
+                for i in range(len(self.user_list)):
+                    out[i + 2].append(tot[i][j_id])
+                    out[i + 2].append(tot_words[i][j_id])
+                    out[i + 2].append(avg_words[i][j_id])
+                    out[i + 2].append(med_words[i][j_id])
+                    out[i + 2].append(tot_chars[i][j_id])
+                    out[i + 2].append(avg_chars[i][j_id])
+                    out[i + 2].append(med_chars[i][j_id])
                 bar.next()
 
 
@@ -798,6 +949,137 @@ class Data_manager:
                     bar.next()
 
 
+    def var23_total_nb_user_annotations(self, out, bar):
+        """
+        Adds total number of Annotations
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('TOTAL NB ANNOTATIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].total_nb_user_annotations())
+        bar.next()
+
+        return out
+
+
+    def var24_average_nb_user_annotations(self, out, bar):
+        """
+        Adds average number of Annotations
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('AVG NB ANNOTATIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].avg_nb_user_annotations())
+        bar.next()
+
+        return out
+
+
+    def var25_median_nb_user_annotations(self, out, bar):
+        """
+        Adds median number of Annotations
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('MEDIAN NB ANNOTATIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].median_nb_user_annotations())
+        bar.next()
+
+        return out
+
+
+    def var26_total_nb_user_descriptions(self, out, bar):
+        """
+        Adds total number of descriptions
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('TOTAL NB DESCRIPTIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].total_nb_user_descriptions())
+        bar.next()
+
+        return out
+
+
+    def var27_average_nb_user_descriptions(self, out, bar):
+        """
+        Adds average number of descriptions
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('AVG NB DESCRIPTIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].avg_nb_user_descriptions())
+        bar.next()
+
+        return out
+
+
+    def var28_median_nb_user_descriptions(self, out, bar):
+        """
+        Adds median number of descriptions
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('MEDIAN NB DESCRIPTIONS')
+        for i in range(len(self.user_list)):
+            out[i + 2].append(self.user_list[i].median_nb_user_descriptions())
+        bar.next()
+
+        return out
+
+
+    def var29_aggr_words_and_chars_descriptions(self, out, bar):
+        """
+        Adds total, average and median number of words and chars in descriptions + the total of media (img, link or video) into descriptions
+        :param out: output 2D array
+        :param bar: chargingbar
+        :return: out
+        """
+        out[0].append('X')
+        out[1].append('TOTAL NB WORDS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('AVG NB WORDS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('MEDIAN NB WORDS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('TOTAL NB CHARS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('AVG NB CHARS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('MEDIAN NB CHARS IN DESCRIPTIONS')
+        out[0].append('X')
+        out[1].append('TOTAL NB MEDIAS IN DESCRIPTIONS')
+        for i in range(len(self.user_list)):
+            total_description_word, avg_words_description, median_words_description, total_description_char, avg_chars_description, median_chars_description,total_description_media = self.user_list[i].aggr_user_description()
+            out[i + 2].append(total_description_word)
+            out[i + 2].append(avg_words_description)
+            out[i + 2].append(median_words_description)
+            out[i + 2].append(total_description_char)
+            out[i + 2].append(avg_chars_description)
+            out[i + 2].append(median_chars_description)
+            out[i + 2].append(total_description_media)
+        bar.next()
+
+        return out
+
+
     def var_results(self, out):
         """
         For each user, appends their associated practical and theoretical grades to the output 2D list (2 variables)
@@ -850,6 +1132,15 @@ class Data_manager:
         self.var20_nb_of_days_worked(out, bar)
         self.var21_module_percent_time(out, bar)
         self.var22_annotation_visit_order(out, bar)
+        self.var23_total_nb_user_annotations(out, bar)
+        self.var24_average_nb_user_annotations(out, bar)
+        self.var25_median_nb_user_annotations(out, bar)
+
+        self.var26_total_nb_user_descriptions(out, bar)
+        self.var27_average_nb_user_descriptions(out, bar)
+        self.var28_median_nb_user_descriptions(out, bar)
+
+        self.var29_aggr_words_and_chars_descriptions(out, bar)
 
         self.var_results(out)
 
@@ -865,13 +1156,16 @@ class Data_manager:
         csv_out = csv.writer(f)
 
         # write data into file
-        print len(out[0])
+        #print('DEBUG')
+        #print len(out[0])
+        #print('END DEBUG')
         csv_out.writerow(out[0])
         for i in range(len(self.user_list)+1):
             csv_out.writerow(out[i + 1])
 
         f.close()
         bar.finish()
+        print('write_ml_csv : end')
 
     def draw_timeline(self, params=None, key_dates=[], user_id = None):
         """
@@ -1206,6 +1500,7 @@ def handle_args(args):
 
 
     manager = Data_manager(project_name, ml_out_dir=ml_out_dir, image_list=image_list, user_list=user_list)
+    print 'manager'
     print manager
 
     if ml:
