@@ -182,8 +182,8 @@ def build_models(project, index=None, savedir=config.WORKING_DIRECTORY):
                                   max_features='auto', max_leaf_nodes=None,
                                   min_impurity_decrease=0.0, min_impurity_split=None,
                                   min_samples_leaf=10, min_samples_split=2,
-                                  min_weight_fraction_leaf=0.0, n_estimators=10000, n_jobs=1,
-                                  oob_score=False, random_state=0, verbose=0, warm_start=False)
+                                  min_weight_fraction_leaf=0.0, n_estimators=10000, n_jobs=4,
+                                  oob_score=False, random_state=0, verbose=10, warm_start=False)
 
             # fill FULL data set
             regr.fit(newX, newY)
@@ -423,8 +423,8 @@ def cross_validation_test(project, index=None, savedir=config.WORKING_DIRECTORY)
                                   max_features='auto', max_leaf_nodes=None,
                                   min_impurity_decrease=0.0, min_impurity_split=None,
                                   min_samples_leaf=10, min_samples_split=2,
-                                  min_weight_fraction_leaf=0.0, n_estimators=1000, n_jobs=1,
-                                  oob_score=False, verbose=0, random_state=0, warm_start=False)
+                                  min_weight_fraction_leaf=0.0, n_estimators=1000, n_jobs=4,
+                                  oob_score=False, verbose=10, random_state=0, warm_start=False)
 
             cv_scores, pred_grades = leave_one_out_cv(regr, newX, newY)
 
@@ -792,7 +792,7 @@ class Gui(tk.Frame):
 
         img_tmp = Image.open(self.file_dirs[self.files_index])
         self.lock.release()
-        img_tmp = img_tmp.resize((1500, 1000), Image.ANTIALIAS)
+        img_tmp = img_tmp.resize((1500, 1000))
         img = ImageTk.PhotoImage(img_tmp)
 
         self.image_panel.pack_forget()
@@ -821,7 +821,7 @@ class Gui(tk.Frame):
 
         img_tmp = Image.open(self.file_dirs[self.files_index])
         self.lock.release()
-        img_tmp = img_tmp.resize((1500, 1000), Image.ANTIALIAS)
+        img_tmp = img_tmp.resize((1500, 1000))
         img = ImageTk.PhotoImage(img_tmp)
 
         self.image_panel.pack_forget()
@@ -849,7 +849,7 @@ class Gui(tk.Frame):
         self.lock.acquire()
         if len(self.file_dirs) > 0 and self.image_panel is None:
             img_tmp = Image.open(self.file_dirs[self.files_index])
-            img_tmp = img_tmp.resize((1500, 1000), Image.ANTIALIAS)
+            img_tmp = img_tmp.resize((1500, 1000))
             img = ImageTk.PhotoImage(img_tmp)
             self.image_panel = Label(self.panel, image=img)
             self.image_panel.image = img
