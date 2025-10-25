@@ -29,7 +29,7 @@ import socket
 import time
 import numpy as np
 from cytomine.models import *
-from cytomine.models.description import *
+#from cytomine.models.description import * # module not in python client anymore (2.7.3)
 from shapely.wkt import loads
 from shutil import copyfile
 import config
@@ -39,6 +39,15 @@ import sys
 import inspect
 ##TODO : add ConnectionHistory to python client and use it
 
+# Compatibility layer for old Cytomine python client versions (2.7.3)
+try:
+    from cytomine.cytomine import Cytomine
+    if not hasattr(Cytomine, 'fetch'):
+        def _compat_fetch(self, model):
+            return model.fetch()
+        Cytomine.fetch = _compat_fetch
+except Exception:
+    pass
 
 def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subset=None, us_subset=None,
              cytomine_host=config.cytomine_host, cytomine_public_key=config.cytomine_public_key,
@@ -105,7 +114,11 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
     # Here we should check arg, if null then get all images from project
     image_instances = ImageInstanceCollection()
     image_instances.project = id_project
-    image_instances = conn.fetch(image_instances)
+    
+    #image_instances = conn.fetch(image_instances) # old client compatibility
+    #Compatibility layer for old Cytomine python client versions (2.7.3)
+    image_instances = ImageInstanceCollection().fetch_with_filter("project", id_project)
+    
     images = image_instances.data()
     print "Nb images in project: %d" % len(images)
 
