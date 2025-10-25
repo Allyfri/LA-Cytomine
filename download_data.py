@@ -115,7 +115,8 @@ def get_data(project_dir, id_project, users_metadata_file, id_ref_user, im_subse
     image_instances = ImageInstanceCollection()
     image_instances.project = id_project
     
-    #image_instances = conn.fetch(image_instances) # old client compatibility
+    # old client compatibility
+    #image_instances = conn.fetch(image_instances) 
     #Compatibility layer for old Cytomine python client versions (2.7.3)
     image_instances = ImageInstanceCollection().fetch_with_filter("project", id_project)
     
