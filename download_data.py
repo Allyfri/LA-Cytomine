@@ -25,6 +25,9 @@ import csv
 import datetime
 import math
 import os
+import sys
+import io
+import codecs
 import socket
 import time
 import numpy as np
@@ -37,6 +40,93 @@ from cytomine import Cytomine
 from PIL import Image
 import sys
 import inspect
+
+# Forcing path to working/directory/<project_name> & remapping old paths
+try:
+    import __builtin__ as builtins   # Py2
+except ImportError:
+    import builtins                  # Py3
+
+# 1) Guess project name (download_data.py <project_name> ...)
+try:
+    _project_name = sys.argv[1]
+except Exception:
+    _project_name = "run"
+
+# 2) Build working directory paths
+BASE_DIR   = os.path.join(os.path.dirname(__file__), "working", "directory", _project_name)
+IMAGES_DIR = os.path.join(BASE_DIR, "images")
+for d in (BASE_DIR, IMAGES_DIR):
+    if not os.path.isdir(d):
+        try: os.makedirs(d)
+        except: pass
+
+# 3) Remap every path from 'C:\mnt\tmp\UBUNTU_DATA\Cytomine-Data\...' to BASE_DIR
+_OLD_BASES = [
+    r"C:\mnt\tmp\UBUNTU_DATA\Cytomine-Data",
+    r"/mnt/tmp/UBUNTU_DATA/Cytomine-Data",
+]
+def _remap(p):
+    try:
+        p_norm = os.path.normpath(p)
+        for ob in _OLD_BASES:
+            ob_norm = os.path.normpath(ob)
+            if p_norm.lower().startswith(ob_norm.lower()):
+                suffix = p_norm[len(ob_norm):].lstrip("\\/")
+                return os.path.join(BASE_DIR, suffix)
+    except Exception:
+        pass
+    return p
+
+# 4) Hook: (open/io.open/codecs.open)
+_old_open        = builtins.open
+_old_io_open     = io.open
+_old_codecs_open = codecs.open
+
+def _open_logged(path, mode='r', *a, **k):
+    if any(f in mode for f in ('w','a','x')):
+        path = _remap(path)
+        print("écriture ->", os.path.abspath(path))
+    return _old_open(path, mode, *a, **k)
+
+def _io_open_logged(path, mode='r', *a, **k):
+    if any(f in mode for f in ('w','a','x')):
+        path = _remap(path)
+        print("écriture (io) ->", os.path.abspath(path))
+    return _old_io_open(path, mode, *a, **k)
+
+def _codecs_open_logged(path, mode='r', *a, **k):
+    if any(f in mode for f in ('w','a','x')):
+        path = _remap(path)
+        print("écriture (codecs) ->", os.path.abspath(path))
+    return _old_codecs_open(path, mode, *a, **k)
+
+builtins.open = _open_logged
+io.open       = _io_open_logged
+codecs.open   = _codecs_open_logged
+
+# Forcing logging of file writtings
+print("cwd:", os.getcwd())
+print("TEMP:", os.environ.get("TEMP"))
+
+# Hook for Py2/Py3
+try:
+    import __builtin__ as builtins   # Py2
+except ImportError:
+    import builtins                  # Py3
+
+_old_open = builtins.open
+def open_logged(path, mode='r', *a, **k):
+    if any(flag in mode for flag in ('w','a','x')):
+        try:
+            p = os.path.abspath(path)
+        except Exception:
+            p = path
+        print("écriture ->", p)
+    return _old_open(path, mode, *a, **k)
+
+builtins.open = open_logged
+
 ##TODO : add ConnectionHistory to python client and use it
 
 # Compatibility layer for old Cytomine python client versions (2.7.3)

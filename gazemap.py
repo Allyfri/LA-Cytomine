@@ -31,7 +31,12 @@ import numpy as np
 import config
 from matplotlib import pyplot, image as matImage
 from sklearn import cluster
-from pygazeanalyser.gazeplotter import make_heatmap
+#Compatibility problem : pygazeanalyser renamed make_heatmap to draw_heatmap
+try:
+    from pygazeanalyser.gazeplotter import make_heatmap
+except ImportError:
+    # aliasing
+    from pygazeanalyser.gazeplotter import draw_heatmap as make_heatmap
 import config
 import matplotlib.pyplot as plt
 

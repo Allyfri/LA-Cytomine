@@ -27,7 +27,47 @@ import config
 import user_data
 from dictionary_data import parse_positions, parse_ref_annotations, parse_annotations, parse_annotation_actions
 from gazemap import cluster_points, score_user_on_image, generate_reduced_heatmap
-from pygazeanalyser.gazeplotter import make_heatmap, save_heatmap, draw_raw, draw_scanpath
+#Deprecated imports in new pygazeanalyser versions
+# from pygazeanalyser.gazeplotter import make_heatmap, save_heatmap, draw_raw, draw_scanpath
+# Compatibility layer for old pygazeanalyser versions
+
+# make_heatmap is deprecated in favor of draw_heatmap
+try:
+    from pygazeanalyser.gazeplotter import make_heatmap
+except ImportError:
+    from pygazeanalyser.gazeplotter import draw_heatmap as make_heatmap
+
+# save_heatmap is deprecated in favor of draw_heatmap + manual saving
+try:
+    from pygazeanalyser.gazeplotter import save_heatmap
+except ImportError:
+    from pygazeanalyser.gazeplotter import draw_heatmap
+    import numpy as np
+    from PIL import Image
+
+    def save_heatmap(fixations, dispsize, filename, **kwargs):
+        hm = draw_heatmap(fixations, dispsize, **kwargs)
+        arr = np.asarray(hm)
+        if arr.dtype != np.uint8:
+            if arr.max() <= 1.0:
+                arr = (arr * 255).astype('uint8')
+            else:
+                arr = np.clip(arr, 0, 255).astype('uint8')
+        Image.fromarray(arr).save(filename)
+
+# In case draw_raw is deprecated
+try:
+    from pygazeanalyser.gazeplotter import draw_raw
+except ImportError:
+    draw_raw = None  # To change later if needed
+
+# In case draw_scanpath is deprecated
+try:
+    from pygazeanalyser.gazeplotter import draw_scanpath
+except ImportError:
+    # Depending on the version, it may be named make_scanpath
+    from pygazeanalyser.gazeplotter import draw_scanpath as make_scanpath
+
 from PIL import Image
 import numpy as np
 import gc

@@ -26,7 +26,28 @@ import config
 import sys
 import numpy as np
 import image_data
-from pygazeanalyser.gazeplotter import save_heatmap
+# Compatibility problem : pygazeanalyser renamed save_heatmap to draw_heatmap
+try:
+    from pygazeanalyser.gazeplotter import save_heatmap
+except ImportError:
+    from pygazeanalyser.gazeplotter import draw_heatmap
+    import numpy as np
+    from PIL import Image
+
+    def save_heatmap(fixations, dispsize, filename, **kwargs):
+        """
+        Saves a heatmap to file
+        """
+        hm = draw_heatmap(fixations, dispsize, **kwargs)
+        arr = np.asarray(hm)
+        if arr.dtype != np.uint8:
+            arr = np.clip(arr, 0, 255)
+            if arr.max() <= 1.0:
+                arr = (arr * 255).astype('uint8')
+            else:
+                arr = arr.astype('uint8')
+        Image.fromarray(arr).save(filename)
+
 import gc
 import datetime
 
